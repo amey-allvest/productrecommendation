@@ -83,7 +83,7 @@
         </div>
         <section id="summarySection">
           <h2 class="text-3xl font-bold text-white mb-6 border-l-4 border-blue-500 pl-4">Analysis Summary: <span id="industryName"></span></h2>
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto relative">
             <table class="min-w-full bg-gray-800 border border-gray-700 rounded-lg">
               <thead class="bg-gray-700">
                 <tr>
@@ -96,12 +96,15 @@
               </thead>
               <tbody id="summaryTableBody"></tbody>
             </table>
+             <div id="tablePaginationContainer" class="mt-4"></div>
           </div>
         </section>
         <button id="toggleDetailed" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mt-4">Show Detailed Analysis</button>
         <section id="detailedAnalysisSection" class="mt-12 hidden">
           <h2 class="text-3xl font-bold text-white mb-6 border-l-4 border-blue-500 pl-4">Detailed Stock Analysis</h2>
           <div id="detailedCardsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
+          <!-- Container for detailed analysis pagination -->
+          <div id="detailedPaginationContainer" class="mt-8"></div>
         </section>
       </div>
     </div>
