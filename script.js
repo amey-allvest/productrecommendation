@@ -11,7 +11,8 @@ const industries = [
   "Media & Entertainment",
   "Consumer Electronics",
   "Software - Application",
-  "Computer Hardware"
+  "Computer Hardware",
+  "Financial - Data & Stock Exchanges",
 ];
 
 /**
