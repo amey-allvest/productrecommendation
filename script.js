@@ -1,14 +1,14 @@
 const industries = [
   "Aluminium",
-  "IT",
-  "Pharma",
-  "Automotive",
-  "Banking",
-  "Energy",
-  "Real Estate",
-  "Consumer Goods",
-  "Telecommunications",
-  "Healthcare"
+  "Information Technology Services",
+  "Copper",
+  "Broadcasting",
+  "Semiconductors",
+  "Financial - Capital Markets",
+  // "Real Estate",
+  // "Consumer Goods",
+  // "Telecommunications",
+  // "Healthcare"
 ];
 
 // --- MOCK API RESPONSE WITH EXPANDED DATA ---
