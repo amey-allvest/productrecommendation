@@ -8,6 +8,10 @@ const industries = [
   "Broadcasting",
   "Semiconductors",
   "Financial - Capital Markets",
+  "Media & Entertainment",
+  "Consumer Electronics",
+  "Software - Application",
+  "Computer Hardware"
 ];
 
 /**
