@@ -197,83 +197,89 @@ function renderPaginationControls(totalRows) {
   const totalPages = Math.ceil(totalRows / rowsPerPage);
   const existingPagination = summaryTableBody.parentElement.querySelector('.pagination');
   if (existingPagination) existingPagination.remove();
+  
+  if (totalPages <= 1) return; // Don't render pagination if there's only one page
+
   const pagination = document.createElement('div');
   pagination.className = 'pagination flex justify-center mt-4 space-x-2';
-  pagination.innerHTML = `
-    <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded">Previous</button>
-    ${Array.from({ length: totalPages }, (_, i) => `
-      <button onclick="changePage(${i + 1})" class="${currentPage === i + 1 ? 'bg-blue-600' : 'bg-gray-600'} hover:bg-gray-700 text-white px-3 py-1 rounded">
-        ${i + 1}
-      </button>
-    `).join('')}
-    <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded">Next</button>
+  
+  let paginationHTML = `
+    <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
   `;
+
+  for (let i = 1; i <= totalPages; i++) {
+    paginationHTML += `
+      <button onclick="changePage(${i})" class="${currentPage === i ? 'bg-blue-600' : 'bg-gray-600'} hover:bg-gray-700 text-white px-3 py-1 rounded">
+        ${i}
+      </button>
+    `;
+  }
+  
+  paginationHTML += `
+    <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+  `;
+  
+  pagination.innerHTML = paginationHTML;
   summaryTableBody.parentElement.appendChild(pagination);
 }
 
+
 function changePage(page) {
+  const filteredData = getFilteredData();
+  const totalPages = Math.ceil(filteredData.analysis_summary.length / rowsPerPage);
+  if (page < 1 || page > totalPages) return;
   currentPage = page;
-  renderTablePage(getFilteredData(), currentPage);
+  renderTablePage(filteredData, currentPage);
 }
 
 function renderDetailedCards(data) {
   detailedCardsContainer.innerHTML = '';
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const index = parseInt(entry.target.dataset.index);
-        const stock = data.detailed_analysis[index];
-        const recommendationClass = stock.recommendation.toLowerCase();
-        const card = `
-          <div class="card p-6">
-            <div class="flex justify-between items-start mb-4 cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
-              <div>
-                <h3 class="text-2xl font-bold text-white">${stock.company_name}</h3>
-                <p class="text-gray-400">${stock.ticker}</p>
-              </div>
-              <span class="px-4 py-1.5 text-sm font-bold rounded-full ${recommendationClass}">
-                ${stock.recommendation}
-              </span>
-            </div>
-            <div class="space-y-6 hidden">
-              <div>
-                <h4 class="text-lg font-semibold text-blue-400 mb-2">Analysis</h4>
-                <p class="text-gray-300 text-sm">${stock.qualitative_analysis.summary}</p>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold text-blue-400 mb-2">Reasoning</h4>
-                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                  ${stock.qualitative_analysis.reasoning_points.map(p => `<li>${p}</li>`).join('')}
-                </ul>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold text-red-400 mb-2">Risk Factors</h4>
-                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                  ${stock.qualitative_analysis.risk_factors.map(r => `<li>${r}$</li>`).join('')}
-                </ul>
-              </div>
-            </div>
+  data.detailed_analysis.forEach(stock => {
+    const recommendationClass = stock.recommendation.toLowerCase();
+    const card = `
+      <div class="card p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-2xl font-bold text-white">${stock.company_name}</h3>
+            <p class="text-gray-400">${stock.ticker}</p>
           </div>
-        `;
-        entry.target.innerHTML = card;
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-
-  data.detailed_analysis.forEach((stock, index) => {
-    const placeholder = document.createElement('div');
-    placeholder.dataset.index = index;
-    placeholder.className = 'h-64 bg-gray-800 rounded-lg';
-    detailedCardsContainer.appendChild(placeholder);
-    observer.observe(placeholder);
+          <span class="px-4 py-1.5 text-sm font-bold rounded-full ${recommendationClass}">
+            ${stock.recommendation}
+          </span>
+        </div>
+        <div class="space-y-6">
+          <div>
+            <h4 class="text-lg font-semibold text-blue-400 mb-2">Analysis</h4>
+            <p class="text-gray-300 text-sm">${stock.qualitative_analysis.summary}</p>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-blue-400 mb-2">Reasoning</h4>
+            <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+              ${stock.qualitative_analysis.reasoning_points.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-red-400 mb-2">Risk Factors</h4>
+            <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+              ${stock.qualitative_analysis.risk_factors.map(r => `<li>${r}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+    detailedCardsContainer.innerHTML += card;
   });
 }
+
 
 function getFilteredData() {
   const searchTerm = searchInput.value.toLowerCase();
   const filter = recommendationFilter.value;
-  let filteredData = { ...mockApiResponse };
+  let filteredData = { ...mockApiResponse, 
+    analysis_summary: [...mockApiResponse.analysis_summary],
+    detailed_analysis: [...mockApiResponse.detailed_analysis]
+  };
+
   if (searchTerm) {
     filteredData.analysis_summary = mockApiResponse.analysis_summary.filter(item => 
       item.company_name.toLowerCase().includes(searchTerm) || 
@@ -284,6 +290,7 @@ function getFilteredData() {
       item.ticker.toLowerCase().includes(searchTerm)
     );
   }
+
   if (filter !== 'all') {
     filteredData.analysis_summary = filteredData.analysis_summary.filter(item => item.recommendation === filter);
     filteredData.detailed_analysis = filteredData.detailed_analysis.filter(item => item.recommendation === filter);
@@ -295,13 +302,15 @@ function renderData(data) {
   industryNameSpan.textContent = data.industry_analyzed;
   summaryTableBody.innerHTML = '';
   detailedCardsContainer.innerHTML = '';
-  renderTablePage(data, 1);
+  renderTablePage(data, currentPage); // Use current page
   renderDetailedCards(data);
 }
 
 industrySelect.addEventListener('change', () => {
-  analyzeBtn.disabled = ! izb_notatki
-!industrySelect.value;
+  // FIX 1: Corrected the logic to enable/disable the button.
+  // When an industry is selected, `industrySelect.value` is truthy, so `!industrySelect.value` is false.
+  // `analyzeBtn.disabled` becomes false, enabling the button.
+  analyzeBtn.disabled = !industrySelect.value;
 });
 
 analyzeBtn.addEventListener('click', () => {
@@ -316,10 +325,19 @@ analyzeBtn.addEventListener('click', () => {
   }
   loadingDiv.classList.remove('hidden');
   analysisContentDiv.classList.add('hidden');
+  
+  // Reset to first page for new analysis
+  currentPage = 1;
+
   setTimeout(() => {
+    // Also reset filters for a fresh analysis
+    searchInput.value = '';
+    recommendationFilter.value = 'all';
     renderData(getFilteredData());
     loadingDiv.classList.add('hidden');
     analysisContentDiv.classList.remove('hidden');
+    detailedSection.classList.add('hidden');
+    toggleDetailedBtn.textContent = 'Show Detailed Analysis';
   }, 1500);
 });
 
@@ -327,16 +345,15 @@ let searchTimeout;
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    currentPage = 1;
+    currentPage = 1; // Reset to page 1 on search
     renderData(getFilteredData());
   }, 300);
 });
 
 recommendationFilter.addEventListener('change', () => {
-  currentPage = 1 అ
-
-System: 1;
-renderData(getFilteredData());
+  // FIX 2: Removed junk characters from this listener
+  currentPage = 1; // Reset to page 1 on filter change
+  renderData(getFilteredData());
 });
 
 toggleDetailedBtn.addEventListener('click', () => {
